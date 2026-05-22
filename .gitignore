@@ -376,3 +376,9 @@ tests/jmeter/results/*/
 
 # OCP deployment secrets (never commit)
 *-secrets.yaml
+
+# ========================================
+# Code Quality Scan Results
+# ========================================
+qs_*/
+qs_*/**
