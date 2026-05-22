@@ -289,7 +289,7 @@ class RegistryCache:
         # Sort keys for consistent hashing
         sorted_items = sorted(kwargs.items())
         filter_str = str(sorted_items)
-        return hashlib.md5(filter_str.encode()).hexdigest()  # nosec B324
+        return hashlib.sha256(filter_str.encode()).hexdigest()
 
     def _ensure_circuit_lock(self) -> asyncio.Lock:
         """Create the asyncio.Lock lazily on first async use.

@@ -214,8 +214,10 @@ class EncryptionService:
         try:
             salt = os.urandom(16)
             key = self.derive_key_argon2id(self.encryption_secret, salt, self.time_cost, self.memory_cost, self.parallelism)
+            # Fernet automatically generates a random 128-bit IV for each encryption operation
+            # See: https://cryptography.io/en/latest/fernet/#cryptography.fernet.Fernet
             fernet = Fernet(key)
-            token = fernet.encrypt(plaintext.encode()).decode()
+            token = fernet.encrypt(plaintext.encode()).decode()  # Random IV generated internally
 
             bundle_obj = {
                 "version": self.FORMAT_VERSION,
@@ -376,8 +378,9 @@ class EncryptionService:
             # Derive key and decrypt
             salt = base64.b64decode(obj["salt"])
             key = self.derive_key_argon2id(self.encryption_secret, salt, time_cost=obj["t"], memory_cost=obj["m"], parallelism=obj["p"])
+            # Fernet token includes the IV; decrypt extracts and uses it automatically
             fernet = Fernet(key)
-            decrypted = fernet.decrypt(obj["token"].encode())
+            decrypted = fernet.decrypt(obj["token"].encode())  # IV extracted from token
             return decrypted.decode()
         except (InvalidToken, binascii.Error) as e:
             raise ValueError(f"Decryption failed (corrupted or wrong key): {e}") from e

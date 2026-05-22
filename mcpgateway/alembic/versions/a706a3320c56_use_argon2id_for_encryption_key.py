@@ -56,6 +56,7 @@ def reencrypt_with_argon2id(encrypted_text: str) -> str:
         iterations=100000,
     )
     original_key = base64.urlsafe_b64encode(original_kdf.derive(encryption_secret))
+    # Fernet automatically uses random IVs for encryption/decryption
     original_fernet = Fernet(original_key)
     original_encrypted_bytes = base64.urlsafe_b64decode(encrypted_text.encode())
     original_decrypted_bytes = original_fernet.decrypt(original_encrypted_bytes)
@@ -76,6 +77,7 @@ def reencrypt_with_argon2id(encrypted_text: str) -> str:
         type=Type.ID,
     )
     argon2id_key = base64.urlsafe_b64encode(argon2id_raw)
+    # Fernet automatically generates a random IV for each encryption
     argon2id_fernet = Fernet(argon2id_key)
     argon2id_encrypted_bytes = argon2id_fernet.encrypt(original_decrypted_bytes)
     return orjson.dumps(
@@ -122,6 +124,7 @@ def reencrypt_with_pbkdf2hmac(argon2id_bundle: str) -> Optional[str]:
             type=Type.ID,
         )
         argon2id_key = base64.urlsafe_b64encode(argon2id_raw)
+        # Fernet token includes IV; decrypt extracts it automatically
         argon2id_fernet = Fernet(argon2id_key)
         argon2id_encrypted_bytes = argon2id_data["token"].encode()
         decrypted_bytes = argon2id_fernet.decrypt(argon2id_encrypted_bytes)
@@ -133,6 +136,7 @@ def reencrypt_with_pbkdf2hmac(argon2id_bundle: str) -> Optional[str]:
             iterations=100000,
         )
         original_key = base64.urlsafe_b64encode(original_kdf.derive(encryption_secret))
+        # Fernet automatically generates a random IV for each encryption
         original_fernet = Fernet(original_key)
         original_encrypted_bytes = original_fernet.encrypt(decrypted_bytes)
         return base64.urlsafe_b64encode(original_encrypted_bytes).decode()
